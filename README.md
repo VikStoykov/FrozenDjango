@@ -1,0 +1,2 @@
+# FrozenDjango
+Experimental Django project
