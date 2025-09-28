@@ -9,6 +9,7 @@ from rest_framework.response import Response
 import os
 import csv
 import io
+import time
 
 from thewall.serializers import GroupSerializer, UserSerializer, CSVUploadSerializer
 from thewall.models import Profile, Section, DailyProgress
@@ -75,13 +76,17 @@ def upload_csv(request):
 
                 # calculate daily progress for all profiles
                 # TODO: make it with threading
+                start_time = time.time()
                 calculate_daily_progress()
+                end_time = time.time()
+                calculation_time_ms = (end_time - start_time) * 1000
 
             return Response({
                 'success': True,
                 'message': 'CSV file uploaded and processed successfully',
                 'profiles_created': len(rows),
-                'daily_progress_calculated': True
+                'daily_progress_calculated': True,
+                'calculation_time_ms': round(calculation_time_ms, 2)
             }, status=status.HTTP_201_CREATED)
 
         except Exception as e:
