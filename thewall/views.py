@@ -577,18 +577,162 @@ def index(request):
             content_type='application/json'
         )
     else:
+        log_content = ""
+        log_file_path = os.path.join(settings.BASE_DIR, 'wall_progress.log')
+        if os.path.exists(log_file_path):
+            try:
+                with open(log_file_path, 'r') as log_file:
+                    log_content = log_file.read()
+            except Exception as e:
+                log_content = f"Error reading log file: {str(e)}"
+        
+        styles = """
+        <style>
+            body {
+                font-family: 'Helvetica Neue', Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #f5f5f5;
+            }
+            h1, h2 {
+                color: #2c3e50;
+                margin-top: 20px;
+            }
+            h1 {
+                border-bottom: 2px solid #3498db;
+                padding-bottom: 10px;
+                font-size: 28px;
+            }
+            h2 {
+                font-size: 22px;
+                margin-top: 30px;
+            }
+            .container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+            .endpoints {
+                flex: 1;
+                min-width: 300px;
+                background-color: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            }
+            .log-container {
+                flex: 2;
+                min-width: 500px;
+                background-color: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            }
+            .log-viewer {
+                height: 600px;
+                overflow-y: auto;
+                background-color: #2c3e50;
+                color: #ecf0f1;
+                padding: 15px;
+                border-radius: 5px;
+                font-family: monospace;
+                font-size: 14px;
+                white-space: pre-wrap;
+                line-height: 1.5;
+            }
+            ul {
+                padding-left: 20px;
+            }
+            li {
+                margin-bottom: 8px;
+            }
+            a {
+                color: #3498db;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+                color: #2980b9;
+            }
+            .back-link {
+                display: inline-block;
+                margin-top: 20px;
+                font-size: 16px;
+            }
+            .team-line {
+                margin: 2px 0;
+            }
+            .highlight {
+                color: #2ecc71;
+                font-weight: bold;
+            }
+            .header-line {
+                color: #e74c3c;
+                font-weight: bold;
+            }
+        </style>
+        """
+        
+        # Format log content with syntax highlighting
+        formatted_log = ""
+        if log_content:
+            lines = log_content.split('\n')
+            for line in lines:
+                if "Wall Construction Progress Log" in line or "Started on" in line or "End of simulation" in line or "-"*10 in line:
+                    formatted_log += f'<div class="header-line">{line}</div>'
+                elif "Completed section" in line:
+                    formatted_log += f'<div class="team-line highlight">{line}</div>'
+                else:
+                    formatted_log += f'<div class="team-line">{line}</div>'
+        else:
+            formatted_log = "No construction log available."
+
         html = f"""
-        <h1>The Wall API</h1>
-        <p>Available endpoints:</p>
-        <ul>
-            <li><a href="{request.build_absolute_uri('/thewall/')}?api=1">API Overview (JSON)</a></li>
-            <li><strong>POST</strong> <a href="{request.build_absolute_uri('/thewall/upload-csv/')}">/thewall/upload-csv/</a> - Upload CSV (Admin only)</li>
-            <li><strong>POST</strong> <a href="{request.build_absolute_uri('/thewall/upload-csv/?parallel=true&teams=10')}">/thewall/upload-csv/?parallel=true&teams=10</a> - Upload CSV with parallel simulation (Admin only)</li>
-            <li><strong>GET</strong> <a href="{request.build_absolute_uri('/thewall/profiles/1/days/1/')}">/thewall/profiles/1/days/1/</a> - Profile day details</li>
-            <li><strong>GET</strong> <a href="{request.build_absolute_uri('/thewall/profiles/1/overview/1/')}">/thewall/profiles/1/overview/1/</a> - Profile overview</li>
-            <li><strong>GET</strong> <a href="{request.build_absolute_uri('/thewall/profiles/overview/1/')}">/thewall/profiles/overview/1/</a> - All profiles overview</li>
-            <li><strong>GET</strong> <a href="{request.build_absolute_uri('/thewall/profiles/overview/')}">/thewall/profiles/overview/</a> - Total overview</li>
-        </ul>
-        <p><a href="{request.build_absolute_uri('/api/')}">← Back to main API</a></p>
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>The Wall API - Construction Dashboard</title>
+            {styles}
+        </head>
+        <body>
+            <h1>The Wall API - Construction Dashboard</h1>
+            
+            <div class="container">
+                <div class="endpoints">
+                    <h2>API Endpoints</h2>
+                    <ul>
+                        <li><a href="{request.build_absolute_uri('/thewall/')}?api=1">API Overview (JSON)</a></li>
+                        <li><strong>POST</strong> <a href="{request.build_absolute_uri('/thewall/upload-csv/')}">/thewall/upload-csv/</a> - Upload CSV (Admin only)</li>
+                        <li><strong>POST</strong> <a href="{request.build_absolute_uri('/thewall/upload-csv/?parallel=true&teams=10')}">/thewall/upload-csv/?parallel=true&teams=10</a> - Upload CSV with parallel simulation (Admin only)</li>
+                        <li><strong>GET</strong> <a href="{request.build_absolute_uri('/thewall/profiles/1/days/1/')}">/thewall/profiles/1/days/1/</a> - Profile day details</li>
+                        <li><strong>GET</strong> <a href="{request.build_absolute_uri('/thewall/profiles/1/overview/1/')}">/thewall/profiles/1/overview/1/</a> - Profile overview</li>
+                        <li><strong>GET</strong> <a href="{request.build_absolute_uri('/thewall/profiles/overview/1/')}">/thewall/profiles/overview/1/</a> - All profiles overview</li>
+                        <li><strong>GET</strong> <a href="{request.build_absolute_uri('/thewall/profiles/overview/')}">/thewall/profiles/overview/</a> - Total overview</li>
+                    </ul>
+                    
+                    <h2>Configuration</h2>
+                    <ul>
+                        <li><strong>Cubic yards per crew per day:</strong> {settings.WALL_CONSTRUCTION['CUBIC_YARDS_PER_CREW_PER_DAY']}</li>
+                        <li><strong>Cost per cubic yard:</strong> ${settings.WALL_CONSTRUCTION['COST_PER_CUBIC_YARD']}</li>
+                        <li><strong>Maximum wall height:</strong> {settings.WALL_CONSTRUCTION['MAX_HEIGHT']} feet</li>
+                    </ul>
+                    
+                    <p class="back-link"><a href="{request.build_absolute_uri('/api/')}">← Back to main API</a></p>
+                </div>
+                
+                <div class="log-container">
+                    <h2>Wall Construction Progress Log</h2>
+                    <div class="log-viewer">
+                        {formatted_log}
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>
         """
         return HttpResponse(html)

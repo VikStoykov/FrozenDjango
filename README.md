@@ -76,6 +76,8 @@ curl -u admin -H 'Accept: application/json; indent=4' http://127.0.0.1:8000/thew
 
 ### Data Endpoints
 
+![index page of thewall](./images/thewall_page.png)
+
 Entry point: *http://127.0.0.1:8000/thewall/*
 
 Retrieve ice amount for a specific profile on a specific day:
