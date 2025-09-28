@@ -57,7 +57,17 @@ def upload_csv(request):
             rows = list(csv_reader)
 
             with transaction.atomic():
+                DailyProgress.objects.all().delete()
+                Section.objects.all().delete() 
                 Profile.objects.all().delete()
+                
+                # Reset auto-increment counters to ensure IDs start from 1
+                from django.db import connection
+                cursor = connection.cursor()
+                cursor.execute("DELETE FROM sqlite_sequence WHERE name='profiles';")
+                cursor.execute("DELETE FROM sqlite_sequence WHERE name='sections';")
+                cursor.execute("DELETE FROM sqlite_sequence WHERE name='daily_progress';")
+                print("Tables cleared and auto-increment reset.")
 
                 for profile_idx, row in enumerate(rows, 1):
                     if not row or all(cell.strip() == '' for cell in row):
@@ -190,7 +200,7 @@ def profile_overview(request, profile_id, day_num=1):
     """
     try:
         total_cost = DailyProgress.objects.filter(
-            profile_id=profile_id, 
+            profile_id=profile_id,
             day__lte=day_num
         ).aggregate(total=Sum('cost'))['total'] or 0
 
@@ -235,7 +245,7 @@ def all_profiles_overview(request):
         total_cost = DailyProgress.objects.aggregate(
             total=Sum('cost')
         )['total'] or 0
-        
+
         return Response({
             'day': None,
             'cost': f"{total_cost:,}"
@@ -244,4 +254,72 @@ def all_profiles_overview(request):
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 def index(request):
-    return HttpResponse("Hello, world. This is The Wall.")
+    """
+    Show all available thewall API endpoints
+    """
+    if request.headers.get('Accept') == 'application/json' or 'api' in request.GET:
+        # Return JSON response for API clients
+        base_url = request.build_absolute_uri('/thewall/')
+        endpoints = {
+            "message": "The Wall API Endpoints",
+            "endpoints": {
+                "welcome": {
+                    "url": base_url,
+                    "method": "GET",
+                    "description": "This endpoint"
+                },
+                "csv_upload": {
+                    "url": f"{base_url}upload-csv/",
+                    "method": "POST", 
+                    "description": "Upload CSV file with wall construction data (Admin only)",
+                    "authentication": "Admin required"
+                },
+                "profile_day_detail": {
+                    "url": f"{base_url}profiles/{{profile_id}}/days/{{day}}/",
+                    "method": "GET",
+                    "description": "Get ice amount for specific profile on specific day",
+                    "example": f"{base_url}profiles/1/days/1/"
+                },
+                "profile_overview": {
+                    "url": f"{base_url}profiles/{{profile_id}}/overview/{{day}}/",
+                    "method": "GET", 
+                    "description": "Get total cost for specific profile up to specified day",
+                    "example": f"{base_url}profiles/1/overview/1/"
+                },
+                "profiles_overview_with_day": {
+                    "url": f"{base_url}profiles/overview/{{day}}/",
+                    "method": "GET",
+                    "description": "Get total cost for all profiles up to specified day",
+                    "example": f"{base_url}profiles/overview/1/"
+                },
+                "profiles_overview_total": {
+                    "url": f"{base_url}profiles/overview/",
+                    "method": "GET",
+                    "description": "Get total cost for all profiles across all days"
+                }
+            },
+            "configuration": {
+                "cubic_yards_per_crew_per_day": settings.WALL_CONSTRUCTION['CUBIC_YARDS_PER_CREW_PER_DAY'],
+                "cost_per_cubic_yard": settings.WALL_CONSTRUCTION['COST_PER_CUBIC_YARD'],
+                "max_height": settings.WALL_CONSTRUCTION['MAX_HEIGHT']
+            }
+        }
+        return HttpResponse(
+            content=str(endpoints).replace("'", '"'),
+            content_type='application/json'
+        )
+    else:
+        html = f"""
+        <h1>The Wall API</h1>
+        <p>Available endpoints:</p>
+        <ul>
+            <li><a href="{request.build_absolute_uri('/thewall/')}?api=1">API Overview (JSON)</a></li>
+            <li><strong>POST</strong> <a href="{request.build_absolute_uri('/thewall/upload-csv/')}">/thewall/upload-csv/</a> - Upload CSV (Admin only)</li>
+            <li><strong>GET</strong> <a href="{request.build_absolute_uri('/thewall/profiles/1/days/1/')}">/thewall/profiles/1/days/1/</a> - Profile day details</li>
+            <li><strong>GET</strong> <a href="{request.build_absolute_uri('/thewall/profiles/1/overview/1/')}">/thewall/profiles/1/overview/1/</a> - Profile overview</li>
+            <li><strong>GET</strong> <a href="{request.build_absolute_uri('/thewall/profiles/overview/1/')}">/thewall/profiles/overview/1/</a> - All profiles overview</li>
+            <li><strong>GET</strong> <a href="{request.build_absolute_uri('/thewall/profiles/overview/')}">/thewall/profiles/overview/</a> - Total overview</li>
+        </ul>
+        <p><a href="{request.build_absolute_uri('/api/')}">← Back to main API</a></p>
+        """
+        return HttpResponse(html)

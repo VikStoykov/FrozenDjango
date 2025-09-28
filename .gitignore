@@ -3,3 +3,4 @@ myenv/
 *.sql
 __pycache__/
 wall_construction_plan.csv
+test_data/test_valid_big.csv

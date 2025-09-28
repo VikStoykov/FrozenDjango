@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.shortcuts import redirect
 from rest_framework import routers
 
 from thewall import views
@@ -25,8 +26,12 @@ router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'groups', views.GroupViewSet)
 
+def redirect_to_thewall(request):
+    return redirect('/thewall/')
+
 urlpatterns = [
-    path('', include(router.urls)),
+    path('', redirect_to_thewall, name='home'),
+    path('api/', include(router.urls)),
     path("thewall/", include("thewall.urls")),
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
