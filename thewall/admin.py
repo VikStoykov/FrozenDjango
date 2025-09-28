@@ -1,3 +1,6 @@
 from django.contrib import admin
+from .models import Profile, Section, DailyProgress
 
-# Register your models here.
+admin.site.register(Profile)
+admin.site.register(Section)
+admin.site.register(DailyProgress)

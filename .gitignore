@@ -1,4 +1,5 @@
 myenv/
 *.sqlite3
+*.sql
 __pycache__/
 wall_construction_plan.csv

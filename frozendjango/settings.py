@@ -20,7 +20,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+# !!! CHANGE THIS BEFORE DEPLOYMENT !!!
+# !!! CHANGE THIS BEFORE DEPLOYMENT !!!
+# !!! CHANGE THIS BEFORE DEPLOYMENT !!!
 SECRET_KEY = 'django-insecure-dim9rbgwon(1ijc8_52_xxm%(2l^^$*#s=gihe2w+6bijag#v6'
+# !!! CHANGE THIS BEFORE DEPLOYMENT !!!
+# !!! CHANGE THIS BEFORE DEPLOYMENT !!!
+# !!! CHANGE THIS BEFORE DEPLOYMENT !!!
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -131,3 +137,10 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Wall Construction Configuration
+WALL_CONSTRUCTION = {
+    'CUBIC_YARDS_PER_CREW_PER_DAY': 195,
+    'COST_PER_CUBIC_YARD': 1900,
+    'MAX_HEIGHT': 30,
+}
