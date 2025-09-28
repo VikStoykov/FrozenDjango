@@ -1,8 +1,8 @@
 import csv
 import random
 
-lines = 300
-max_values_per_line = 2000
+lines = 50
+max_values_per_line = 500
 value_range = (0, 30)
 
 print('Generating large CSV file...')

@@ -4,3 +4,6 @@ myenv/
 __pycache__/
 wall_construction_plan.csv
 test_data/test_valid_big.csv
+test_data/test_small.csv
+test_data/test_medium.csv
+*.log
